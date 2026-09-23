@@ -1,0 +1,56 @@
+services:
+  homepage:
+    container_name: homepage
+    image: ghcr.io/gethomepage/homepage:latest
+    restart: unless-stopped
+    # Runs as root (no PUID/PGID) so it can read the Docker socket for container status.
+    environment:
+      TZ: '${TZ}'
+      HOMEPAGE_ALLOWED_HOSTS: '${HOMEPAGE_ALLOWED_HOSTS}' # host(s) the dashboard is served from, e.g. homepage.example.com
+      # Substituted as {{HOMEPAGE_VAR_*}} in configs/homepage/*.yaml
+      HOMEPAGE_VAR_TZ: '${TZ}'
+      HOMEPAGE_VAR_DOMAIN: '${HOMEPAGE_VAR_DOMAIN}'
+      HOMEPAGE_VAR_LATITUDE: '${HOMEPAGE_VAR_LATITUDE}'
+      HOMEPAGE_VAR_LONGITUDE: '${HOMEPAGE_VAR_LONGITUDE}'
+      # Service widget credentials, referenced as {{HOMEPAGE_VAR_*}} in configs/homepage/services.yaml
+      HOMEPAGE_VAR_JELLYFIN_KEY: '${HOMEPAGE_VAR_JELLYFIN_KEY}'
+      HOMEPAGE_VAR_SEERR_KEY: '${HOMEPAGE_VAR_SEERR_KEY}'
+      HOMEPAGE_VAR_SONARR_TV_KEY: '${HOMEPAGE_VAR_SONARR_TV_KEY}'
+      HOMEPAGE_VAR_SONARR_ANIME_KEY: '${HOMEPAGE_VAR_SONARR_ANIME_KEY}'
+      HOMEPAGE_VAR_RADARR_MOVIES_KEY: '${HOMEPAGE_VAR_RADARR_MOVIES_KEY}'
+      HOMEPAGE_VAR_RADARR_ANIME_KEY: '${HOMEPAGE_VAR_RADARR_ANIME_KEY}'
+      HOMEPAGE_VAR_PROWLARR_KEY: '${HOMEPAGE_VAR_PROWLARR_KEY}'
+      HOMEPAGE_VAR_AUTOBRR_KEY: '${HOMEPAGE_VAR_AUTOBRR_KEY}'
+      HOMEPAGE_VAR_TRANSMISSION_USER: '${TRANSMISSION_USER}'
+      HOMEPAGE_VAR_TRANSMISSION_PASSWORD: '${TRANSMISSION_PASSWORD}'
+      HOMEPAGE_VAR_PIHOLE_PASSWORD: '${PIHOLE_WEBPASSWORD}'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # container status on each service tile
+      - ./configs/homepage:/app/config
+      - ./storage:/storage:ro # disk usage in the Storage widget
+
+  vaultwarden:
+    container_name: vaultwarden
+    image: vaultwarden/server
+    restart: always
+    expose:
+      - 80
+    volumes:
+      - ./configs/vaultwarden:/data
+      - ./configs/vaultwarden-logs:/var/log/vw-logs
+    environment:
+      SMTP_HOST: '${VAULTWARDEN_SMTP_HOST}'
+      SMTP_PORT: '${VAULTWARDEN_SMTP_PORT}'
+      SMTP_FROM: '${VAULTWARDEN_SMTP_FROM}'
+      SMTP_SECURITY: 'starttls'
+      SMTP_USERNAME: '${VAULTWARDEN_SMTP_USERNAME}'
+      SMTP_PASSWORD: '${VAULTWARDEN_SMTP_PASSWORD}'
+      WEB_VAULT_ENABLED: 'false'
+      DOMAIN: '${VAULTWARDEN_DOMAIN}'
+      SIGNUPS_ALLOWED: 'false'
+      SIGNUPS_DOMAINS_WHITELIST: '${VAULTWARDEN_SIGNUPS_DOMAINS_WHITELIST}'
+      SIGNUPS_VERIFY: 'true'
+      INVITATIONS_ALLOWED: 'true'
+      # default is to purge the trash every night
+      TRASH_PURGE_SCHEDULE: '0 0 7 * * *'
+      LOG_FILE: '/var/log/vw-logs/vaultwarden.log'

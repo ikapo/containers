@@ -1,0 +1,13 @@
+# Secrets and runtime data
+.env
+.env.hermes
+
+# Per-host app config, media and vault data
+configs/*
+!configs/homepage/
+configs/homepage/logs/
+storage/
+obsidian/
+
+# Backups
+*.bak

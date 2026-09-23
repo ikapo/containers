@@ -1,0 +1,170 @@
+# https://gethomepage.dev/configs/services/
+# `href` is the public URL (via Nginx Proxy Manager); widget `url`s use the internal
+# container name so they don't round-trip through the proxy.
+# API keys and the domain come from HOMEPAGE_VAR_* in .env (see compose.apps.yml).
+
+- Media:
+    - Jellyfin:
+        icon: jellyfin.png
+        description: Movies, shows & anime
+        href: https://jellyfin.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: jellyfin
+        widget:
+          type: jellyfin
+          url: http://jellyfin:8096/jellyfin # Jellyfin is configured with a /jellyfin base URL
+          version: 2 # Jellyfin 10.11+ dropped the /emby routes
+          key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
+          enableBlocks: true
+          enableNowPlaying: true
+    - Seerr:
+        icon: jellyseerr.png
+        description: Request new media
+        href: https://seerr.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: seerr
+        widget:
+          type: jellyseerr
+          url: http://seerr:5055
+          key: "{{HOMEPAGE_VAR_SEERR_KEY}}"
+
+- Downloads:
+    - Sonarr TV:
+        icon: sonarr.png
+        description: TV series
+        href: https://sonarr-tv.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: sonarr-tv
+        widget:
+          type: sonarr
+          url: http://sonarr-tv:8989
+          key: "{{HOMEPAGE_VAR_SONARR_TV_KEY}}"
+    - Sonarr Anime:
+        icon: sonarr.png
+        description: Anime series
+        href: https://sonarr-anime.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: sonarr-anime
+        widget:
+          type: sonarr
+          url: http://sonarr-anime:8989
+          key: "{{HOMEPAGE_VAR_SONARR_ANIME_KEY}}"
+    - Radarr Movies:
+        icon: radarr.png
+        description: Movies
+        href: https://radarr-movies.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: radarr-movies
+        widget:
+          type: radarr
+          url: http://radarr-movies:7878
+          key: "{{HOMEPAGE_VAR_RADARR_MOVIES_KEY}}"
+    - Radarr Anime:
+        icon: radarr.png
+        description: Anime movies
+        href: https://radarr-anime.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: radarr-anime
+        widget:
+          type: radarr
+          url: http://radarr-anime:7878
+          key: "{{HOMEPAGE_VAR_RADARR_ANIME_KEY}}"
+    - Prowlarr:
+        icon: prowlarr.png
+        description: Indexer manager
+        href: https://prowlarr.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: prowlarr
+        widget:
+          type: prowlarr
+          url: http://prowlarr:9696
+          key: "{{HOMEPAGE_VAR_PROWLARR_KEY}}"
+    - Transmission:
+        icon: transmission.png
+        description: Torrent client
+        href: https://transmission.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: transmission
+        widget:
+          type: transmission
+          url: http://transmission:9091
+          username: "{{HOMEPAGE_VAR_TRANSMISSION_USER}}"
+          password: "{{HOMEPAGE_VAR_TRANSMISSION_PASSWORD}}"
+    - Autobrr:
+        icon: autobrr.png
+        description: IRC release grabber
+        href: https://autobrr.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: autobrr
+        widget:
+          type: autobrr
+          url: http://autobrr:7474
+          key: "{{HOMEPAGE_VAR_AUTOBRR_KEY}}"
+    - Profilarr:
+        icon: https://raw.githubusercontent.com/Dictionarry-Hub/profilarr/main/frontend/public/favicon.ico
+        description: Quality profile sync
+        href: https://profilarr.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: profilarr
+
+- Network:
+    - Pi-hole:
+        icon: pi-hole.png
+        description: Network-wide ad blocking
+        href: https://pihole.{{HOMEPAGE_VAR_DOMAIN}}/admin
+        server: local
+        container: pihole
+        widget:
+          type: pihole
+          url: http://pihole:80
+          version: 6
+          key: "{{HOMEPAGE_VAR_PIHOLE_PASSWORD}}"
+    - Nginx Proxy Manager:
+        icon: nginx-proxy-manager.png
+        description: Reverse proxy & SSL
+        href: https://nginx.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: nginx
+    - Dashdot:
+        icon: dashdot.png
+        description: Server monitor
+        href: https://dash.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: dash
+        widget:
+          type: dashdot
+          url: http://dash:3001
+          fields: [cpu, ram, storage, network]
+    - WireGuard:
+        icon: wireguard.png
+        description: VPN
+        server: local
+        container: wireguard
+
+- Apps:
+    - Vaultwarden:
+        icon: vaultwarden.png
+        description: Password manager
+        href: https://bw.{{HOMEPAGE_VAR_DOMAIN}}
+        server: local
+        container: vaultwarden
+    - Hermes:
+        icon: mdi-robot-outline
+        description: AI assistant
+        server: local
+        container: hermes
+    - Obsidian Sync:
+        icon: obsidian.png
+        description: Notes vault sync
+        server: local
+        container: obsidian-sync
+    - Cloudflared:
+        icon: cloudflare.png
+        description: Cloudflare tunnel
+        server: local
+        container: cloudflared
+    - Watchtower:
+        icon: watchtower.png
+        description: Automatic image updates
+        server: local
+        container: watchtower

@@ -1,0 +1,135 @@
+services:
+  transmission:
+    image: linuxserver/transmission:latest
+    container_name: transmission
+    restart: unless-stopped # This makes sure that the application restarts when it crashes
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+      USER: '${TRANSMISSION_USER}'
+      PASS: '${TRANSMISSION_PASSWORD}'
+    volumes:
+      - ./configs/transmission:/config # Change this to your docker config folder
+      - ./storage/Torrents:/downloads/complete # Change this to your download folder
+    ports:
+      - 9091:9091 # Web UI port
+      - 51413:51413 # Torrent port (TCP)
+      - 51413:51413/udp # Torrent port (UDP)
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    privileged: true
+    restart: unless-stopped
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+    ports:
+      - '8096:8096'
+    # Rockchip hardware-transcode devices, specific to the current host (Orange Pi 5).
+    # The official image bundles the RKMPP/RGA drivers; moving to different hardware
+    # means swapping these device paths for whatever that machine's GPU/VPU exposes.
+    devices:
+      - /dev/rga:/dev/rga
+      - /dev/dri:/dev/dri
+      - /dev/dma_heap:/dev/dma_heap
+      - /dev/mpp_service:/dev/mpp_service
+      - /dev/mali0:/dev/mali0
+    volumes:
+      - ./configs/jellyfin:/config
+      - ./configs/jellyfin_cache:/cache
+      - ./storage/Media:/data:ro
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+    volumes:
+      - ./configs/prowlarr:/config
+
+  sonarr-tv:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr-tv
+    restart: unless-stopped
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+    volumes:
+      - ./configs/sonarr-tv:/config
+      - ./storage:/data
+
+  sonarr-anime:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr-anime
+    restart: unless-stopped
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+    volumes:
+      - ./configs/sonarr-anime:/config
+      - ./storage:/data
+
+  radarr-movies:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr-movies
+    restart: unless-stopped
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+    volumes:
+      - ./configs/radarr-movies:/config
+      - ./storage:/data
+
+  radarr-anime:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr-anime
+    restart: unless-stopped
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+    volumes:
+      - ./configs/radarr-anime:/config
+      - ./storage:/data
+
+  autobrr:
+    container_name: autobrr
+    image: ghcr.io/autobrr/autobrr:latest
+    restart: unless-stopped
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+    volumes:
+      - ./configs/autobrr:/config
+
+  profilarr:
+    image: ghcr.io/dictionarry-hub/profilarr:latest
+    container_name: profilarr
+    restart: unless-stopped
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+      ORIGIN: '${PROFILARR_ORIGIN}' # external URL behind the reverse proxy (scheme + host + port)
+    volumes:
+      - ./configs/profilarr:/config
+
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    init: true
+    restart: unless-stopped
+    environment:
+      TZ: '${TZ}'
+    volumes:
+      - ./configs/seerr:/app/config

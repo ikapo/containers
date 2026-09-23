@@ -1,0 +1,36 @@
+include:
+  # Hermes + Obsidian sync — self-contained, uses its own env file so it can
+  # be lifted onto another machine later with `docker compose -f compose.hermes.yml up -d`.
+  - path: compose.hermes.yml
+    env_file: .env.hermes
+  - compose.network.yml
+  - compose.media.yml
+  - compose.apps.yml
+
+## Pinned so container IPs (e.g. pihole/cloudflared static addresses in
+## compose.network.yml) stay stable across recreates on this host.
+## Lives at root since it applies across every included service.
+networks:
+  default:
+    name: containers_default
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+
+## Watchtower upgrades services automatically (optional)
+## activate via 'COMPOSE_PROFILES=update docker compose up -d'
+## Lives at root (not in a split file) since it applies across every included service.
+services:
+  watchtower:
+    container_name: watchtower
+    image: nickfedor/watchtower
+    restart: unless-stopped
+    profiles: ['update']
+    environment:
+      TZ: '${TZ}'
+      WATCHTOWER_CLEANUP: 'true'
+      WATCHTOWER_SCHEDULE: '0 0 6 * * *'
+      #WATCHTOWER_POLL_INTERVAL: 86400 # checks for updates every 24 hours
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'

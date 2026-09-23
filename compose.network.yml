@@ -1,0 +1,80 @@
+services:
+  dash:
+    container_name: dash
+    image: mauricenino/dashdot:latest
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/mnt/host:ro
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    depends_on:
+      - cloudflared
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '8081:80'
+    environment:
+      TZ: '${TZ}'
+      WEBPASSWORD: '${PIHOLE_WEBPASSWORD}'
+      DNS1: '172.18.0.53#5053'
+      DNS2: 'no'
+    volumes:
+      - './configs/pihole:/etc/pihole'
+      - './configs/pihole-dnsmasq:/etc/dnsmasq.d'
+    restart: unless-stopped
+    networks:
+      default:
+        ipv4_address: 172.18.0.52
+
+  cloudflared:
+    image: crazymax/cloudflared:latest
+    container_name: cloudflared
+    ports:
+      - '5053:5053/udp'
+    environment:
+      TZ: '${TZ}'
+      TUNNEL_DNS_UPSTREAM: 'https://1.1.1.1/dns-query,https://1.0.0.1/dns-query'
+    restart: always
+    networks:
+      default:
+        ipv4_address: 172.18.0.53
+
+  nginx:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '81:81'
+    volumes:
+      - ./configs/nginx:/data
+      - ./configs/letsencrypt:/etc/letsencrypt
+
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:latest
+    container_name: wireguard
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE #optional
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: '${TZ}'
+      SERVERURL: '${WIREGUARD_URL}'
+      SERVERPORT: '${WIREGUARD_PORT}'
+      PEERS: '5'
+      PEERDNS: '1.1.1.1' #optional
+      INTERNAL_SUBNET: '10.13.13.0' #optional
+      ALLOWEDIPS: '0.0.0.0/0'
+    volumes:
+      - ./configs/wireguard:/config
+      - /lib/modules:/lib/modules
+    ports:
+      - ${WIREGUARD_PORT}:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1

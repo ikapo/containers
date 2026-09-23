@@ -1,0 +1,18 @@
+# https://gethomepage.dev/configs/bookmarks/
+- Developer:
+    - GitHub:
+        - icon: si-github
+          href: https://github.com/
+    - Homepage Docs:
+        - icon: homepage.png
+          href: https://gethomepage.dev/
+
+- Social:
+    - Reddit:
+        - icon: si-reddit
+          href: https://reddit.com/
+
+- Entertainment:
+    - YouTube:
+        - icon: si-youtube
+          href: https://youtube.com/

@@ -1,0 +1,44 @@
+# https://gethomepage.dev/configs/settings/
+title: Home
+description: Home server dashboard
+theme: dark
+color: slate
+headerStyle: boxed
+statusStyle: dot
+hideVersion: true
+useEqualHeights: true
+target: _self
+
+# Dimmed, blurred photo behind translucent cards (the look from gethomepage.dev)
+background:
+  image: https://images.unsplash.com/photo-1502790671504-542ad42d5189?auto=format&fit=crop&w=2560&q=80
+  blur: sm
+  saturate: 50
+  brightness: 50
+  opacity: 50
+cardBlur: md
+
+quicklaunch:
+  searchDescriptions: true
+  hideInternetSearch: false
+  showSearchSuggestions: true
+  provider: duckduckgo
+
+# Columns apply on desktop; on phones every group collapses to a single column.
+layout:
+  Media:
+    icon: mdi-play-circle
+    style: row
+    columns: 2
+  Downloads:
+    icon: mdi-download-circle
+    style: row
+    columns: 4
+  Network:
+    icon: mdi-lan
+    style: row
+    columns: 4
+  Apps:
+    icon: mdi-apps
+    style: row
+    columns: 4
