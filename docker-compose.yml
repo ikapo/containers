@@ -1,15 +1,19 @@
-include:
-  # Hermes + Obsidian sync — self-contained, uses its own env file so it can
-  # be lifted onto another machine later with `docker compose -f compose.hermes.yml up -d`.
-  - path: compose.hermes.yml
-    env_file: .env.hermes
-  - compose.network.yml
-  - compose.media.yml
-  - compose.apps.yml
+## Shared base for every host: the pinned network and watchtower.
+## It deliberately runs no stacks itself. Each host picks its stacks in its
+## own (gitignored) .env, so this repo stays identical on every machine:
+##
+##   COMPOSE_FILE=docker-compose.yml:compose.network.yml:compose.media.yml:compose.apps.yml
+##
+## Keep docker-compose.yml first in the list. Stack files:
+##   compose.network.yml  pihole, cloudflared, wireguard, nginx, dash
+##   compose.media.yml    jellyfin, *arr, prowlarr, transmission, autobrr, seerr
+##   compose.apps.yml     homepage, vaultwarden
+##   compose.hermes.yml   hermes + obsidian-sync (reads .env.hermes)
+## Don't comment stacks in or out here; edit COMPOSE_FILE in .env. See README.
 
 ## Pinned so container IPs (e.g. pihole/cloudflared static addresses in
 ## compose.network.yml) stay stable across recreates on this host.
-## Lives at root since it applies across every included service.
+## Lives at root since it applies across every stack.
 networks:
   default:
     name: containers_default
@@ -20,7 +24,7 @@ networks:
 
 ## Watchtower upgrades services automatically (optional)
 ## activate via 'COMPOSE_PROFILES=update docker compose up -d'
-## Lives at root (not in a split file) since it applies across every included service.
+## Lives at root (not in a split file) since it applies across every stack.
 services:
   watchtower:
     container_name: watchtower

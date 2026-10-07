@@ -1,5 +1,62 @@
 # containers
 
+## Choosing stacks per host
+
+The same repo is checked out on every machine, and each machine runs a different
+set of stacks. The stacks are picked per host in `.env` (gitignored), never by
+editing tracked files, so `git status` stays clean and `git pull` never conflicts.
+
+| File | What's in it |
+| --- | --- |
+| `docker-compose.yml` | Shared base: the pinned `containers_default` network and watchtower. Always listed first. |
+| `compose.network.yml` | pihole, cloudflared, wireguard, nginx, dash |
+| `compose.media.yml` | jellyfin, sonarr/radarr, prowlarr, transmission, autobrr, profilarr, seerr |
+| `compose.apps.yml` | homepage, vaultwarden |
+| `compose.hermes.yml` | hermes + obsidian-sync. Entry point that loads `.env.hermes`; the services are in `compose.hermes.services.yml`. |
+
+Set `COMPOSE_FILE` in the host's `.env` to the files it should run, separated by `:`,
+with `docker-compose.yml` first. For example, a host that runs only Hermes:
+
+```sh
+COMPOSE_FILE=docker-compose.yml:compose.hermes.yml
+```
+
+and a host that runs everything except Hermes:
+
+```sh
+COMPOSE_FILE=docker-compose.yml:compose.network.yml:compose.media.yml:compose.apps.yml
+```
+
+Compose reads `COMPOSE_FILE` from `.env` automatically, so plain `docker compose up -d`
+(or `dc up -d`) starts only that host's stacks. Check which services a host will run with:
+
+```sh
+docker compose config --services
+```
+
+### Moving a stack to another host
+
+1. Copy its runtime data, which isn't in git. For Hermes that's `configs/hermes/`,
+   `obsidian/` (or wherever `VAULT_HOST_PATH` points) and `.env.hermes`:
+   ```sh
+   rsync -aP configs/hermes <host>:~/containers/configs/
+   rsync -aP .env.hermes <host>:~/containers/
+   ```
+2. On the new host, add the stack's file to `COMPOSE_FILE` and run `docker compose up -d`.
+3. On the old host, stop it first, e.g. `docker compose -f compose.hermes.yml down`,
+   then remove it from `COMPOSE_FILE`. A plain `docker compose up -d` doesn't stop
+   containers of stacks that were removed from the list; `--remove-orphans` does.
+
+### Gotchas
+
+- **Don't comment out stacks in `docker-compose.yml`.** That's a per-host edit to a tracked
+  file, which is exactly what `COMPOSE_FILE` replaces.
+- **Hermes needs `compose.hermes.yml`, not `compose.hermes.services.yml`.** Listing the
+  services file directly skips `.env.hermes`, and every Hermes variable comes out blank.
+  `COMPOSE_ENV_FILES` set in `.env` doesn't work either; Compose ignores it there.
+- **New hosts:** copy `.env.example` to `.env` and trim `COMPOSE_FILE`. Without it, Compose
+  falls back to `docker-compose.yml` alone and only the network and watchtower exist.
+
 ## Host setup
 
 ### Free the 172.18.0.0/16 subnet
