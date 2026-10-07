@@ -1,0 +1,20 @@
+#!/bin/sh
+# Run the Hermes CLI inside the hermes container, as the hermes user.
+# Symlink into PATH: ln -s ~/containers/bin/hermes ~/.local/bin/hermes
+# HERDR_AGENT tells herdr this docker process is Hermes, and the HERDR_* vars
+# let the herdr-agent-state plugin report the session (see compose.hermes.herdr.yml).
+set -e
+
+tty=
+[ -t 0 ] && [ -t 1 ] && tty=-t
+
+if [ "$HERDR_ENV" = 1 ]; then
+  set -- -e HERDR_ENV -e HERDR_PANE_ID \
+    -e HERDR_SOCKET_PATH=/herdr/herdr.sock -e HERDR_BIN_PATH=/herdr-bin/herdr \
+    hermes hermes "$@"
+else
+  set -- hermes hermes "$@"
+fi
+
+HERDR_AGENT=hermes exec docker exec -i $tty -u hermes \
+  -e TERM -e COLORTERM -e LANG "$@"

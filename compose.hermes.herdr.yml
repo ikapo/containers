@@ -1,0 +1,11 @@
+## Optional add-on to compose.hermes.yml for hosts that run herdr.
+## Lets the herdr-agent-state Hermes plugin reach the host's herdr server, so
+## `hermes` started from a herdr pane (via bin/hermes) can be resumed by herdr.
+## Add it after compose.hermes.yml in COMPOSE_FILE. Directories, not files, are
+## mounted so a herdr restart (new socket) or `herdr update` (new binary) is
+## picked up without recreating the container.
+services:
+  hermes:
+    volumes:
+      - ${HOME}/.config/herdr:/herdr
+      - ${HOME}/.local/bin:/herdr-bin:ro

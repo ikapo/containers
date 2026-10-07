@@ -13,6 +13,7 @@ editing tracked files, so `git status` stays clean and `git pull` never conflict
 | `compose.media.yml` | jellyfin, sonarr/radarr, prowlarr, transmission, autobrr, profilarr, seerr |
 | `compose.apps.yml` | homepage, vaultwarden |
 | `compose.hermes.yml` | hermes + obsidian-sync. Entry point that loads `.env.hermes`; the services are in `compose.hermes.services.yml`. |
+| `compose.hermes.herdr.yml` | Optional, after `compose.hermes.yml`: lets Hermes report sessions to the host's herdr. See "Hermes in herdr". |
 
 Set `COMPOSE_FILE` in the host's `.env` to the files it should run, separated by `:`,
 with `docker-compose.yml` first. For example, a host that runs only Hermes:
@@ -56,6 +57,21 @@ docker compose config --services
   `COMPOSE_ENV_FILES` set in `.env` doesn't work either; Compose ignores it there.
 - **New hosts:** copy `.env.example` to `.env` and trim `COMPOSE_FILE`. Without it, Compose
   falls back to `docker-compose.yml` alone and only the network and watchtower exist.
+
+## Hermes in herdr
+
+On hosts that run [herdr](https://herdr.dev), `bin/hermes` runs the Hermes CLI inside the
+`hermes` container and tags it with `HERDR_AGENT=hermes`, so herdr shows it as a Hermes
+agent with working/idle/blocked state. To set it up:
+
+1. Put the wrapper on `PATH`: `ln -s ~/containers/bin/hermes ~/.local/bin/hermes`
+2. Install the herdr plugin into the container's Hermes home (it lets herdr resume the session
+   after a restart): `HERMES_HOME=$PWD/configs/hermes herdr integration install hermes`
+3. Add `compose.hermes.herdr.yml` after `compose.hermes.yml` in `COMPOSE_FILE`, then
+   `docker compose up -d hermes`. It mounts `~/.config/herdr` (the socket) and `~/.local/bin`
+   (the herdr binary) so the plugin can reach herdr.
+
+Then run `hermes` in any herdr pane.
 
 ## Host setup
 
